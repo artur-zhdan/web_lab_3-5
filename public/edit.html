@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Animal</title>
+    <link rel="stylesheet" href="styles/create.css">
+</head>
+
+<body>
+
+    <nav>
+        <a href="#">My Zoo</a>
+        <a href="/">My Animals</a>
+        <a href="#" class="active">Create Animal</a>
+    </nav>
+
+    <main>
+        <h1>Edit animal</h1>
+
+        <form id="create-animal-form">
+            <label for="image-url">Image URL</label>
+            <input type="url" id="image-url" placeholder="https://example.com/image.jpg" required pattern="https?://.+">
+
+            <label for="title">Title</label>
+            <input type="text" id="title" placeholder="Text..." required minlength="2" maxlength="100">
+
+            <label for="description">Description</label>
+            <textarea id="description" rows="4" placeholder="Text..." required minlength="10"
+                maxlength="500"></textarea>
+
+            <label for="daily-expense">Price ($)</label>
+            <input type="number" id="daily-expense" required min="0">
+
+            <button type="submit">Edit</button>
+        </form>
+
+        <div class="error-message" id="error-message">
+            Oh snap! Change a few things up and try submitting again.
+        </div>
+    </main>
+
+    <script>
+        // saveToLocalStorage();
+
+        // function saveToLocalStorage() {
+        //     localStorage.setItem('animals', JSON.stringify(animals));
+        // }
+
+        // get from ?id=1
+
+        (async () => {
+            let animals = []
+            await fetch('http://localhost:3030/api/animals')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    // return data;
+                    animals = data;
+                    // populateAnimals();
+                })
+                .catch(err => console.log(err));
+
+            const indexToEdit = parseInt(window.location.search.split('=')[1]);
+
+            console.log(indexToEdit, animals);
+            // alert(indexToEdit);
+
+            const animalToEdit = animals[indexToEdit];
+
+
+            document.getElementById('image-url').value = animals[indexToEdit].imgSrc;
+            document.getElementById('title').value = animals[indexToEdit].name;
+            document.getElementById('description').value = animals[indexToEdit].description;
+            document.getElementById('daily-expense').value = animals[indexToEdit].price;
+        })();
+
+        document.getElementById('create-animal-form').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            let animals = await fetch('http://localhost:3030/api/animals')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    return data;
+                    // animals = data;
+                    // populateAnimals();
+                })
+                .catch(err => console.log(err));
+
+            const indexToEdit = parseInt(window.location.search.split('=')[1]);
+
+            console.log(indexToEdit, animals);
+            // alert(indexToEdit);
+
+            const animalToEdit = animals[indexToEdit];
+
+
+            event.preventDefault();
+            const imageUrl = document.getElementById('image-url').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const dailyExpense = document.getElementById('daily-expense').value;
+
+            console.log(title)
+
+
+            // const imageUrl = animals[indexToEdit].imgSrc;
+            // const title = animals[indexToEdit].name;
+            // const description = animals[indexToEdit].description;
+            // const dailyExpense = animals[indexToEdit].price;
+
+            // find animalToEdit in animals array
+
+
+
+
+            const newAnimal = {
+                imgSrc: imageUrl,
+                name: title,
+                description: description,
+                price: dailyExpense,
+                lastUpdated: (new Date()).toLocaleString(),
+            };
+
+
+            console.log(indexToEdit)
+            // animals[indexToEdit] = newAnimal;
+
+            fetch("http://localhost:3030/api/animals/edit", {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ index: indexToEdit, animal: newAnimal })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    // animals[indexToEdit] = newAnimal;
+                    // saveToLocalStorage();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+            // saveToLocalStorage();
+
+            document.getElementById('create-animal-form').reset();
+        }
+        );
+
+    </script>
+</body>
+
+</html>
