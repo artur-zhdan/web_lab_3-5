@@ -1,0 +1,56 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+nav {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+nav a {
+    margin-right: 20px;
+    text-decoration: none;
+    color: black;
+}
+
+nav a.active {
+    font-weight: bold;
+}
+
+form {
+    width: 50%;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+}
+
+input[type="text"],
+textarea,
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.error-message {
+    margin-top: 20px;
+    background-color: #FFC0CB;
+    padding: 10px;
+    display: none;
+    /* Initially hidden */
+    color: #D8000C;
+}

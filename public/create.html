@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Animal</title>
+    <link rel="stylesheet" href="styles/create.css">
+</head>
+
+<body>
+
+    <nav>
+        <a href="#">My Zoo</a>
+        <a href="/">My Animals</a>
+        <a href="#" class="active">Create Animal</a>
+    </nav>
+
+    <main>
+        <h1>Create animal</h1>
+
+        <form id="create-animal-form">
+            <label for="image-url">Image URL</label>
+            <input type="url" id="image-url" placeholder="https://example.com/image.jpg" required pattern="https?://.+">
+
+            <label for="title">Title</label>
+            <input type="text" id="title" placeholder="Text..." required minlength="2" maxlength="100">
+
+            <label for="description">Description</label>
+            <textarea id="description" rows="4" placeholder="Text..." required minlength="10"
+                maxlength="500"></textarea>
+
+            <label for="daily-expense">Price ($)</label>
+            <input type="number" id="daily-expense" required min="0">
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="error-message" id="error-message">
+            Oh snap! Change a few things up and try submitting again.
+        </div>
+    </main>
+
+    <script>
+        let animals = JSON.parse(localStorage.getItem('animals')) || [
+            {
+                imgSrc: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Ocelot_%28Jaguatirica%29_Zoo_Itatiba.jpg/1200px-Ocelot_%28Jaguatirica%29_Zoo_Itatiba.jpg',
+                name: 'Ocelot',
+                description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+                lastUpdated: 'Last updated 3 mins ago',
+                price: '1000'
+            },
+            {
+                imgSrc: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/1200px-Octopus2.jpg',
+                name: 'Octopus',
+                description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+                lastUpdated: 'Last updated 3 mins ago',
+                price: '1500'
+            },
+            {
+                imgSrc: 'https://www.thesprucepets.com/thmb/4H4K_nta-Zvv4yJgndStugkeqtg=/2782x0/filters:no_upscale():strip_icc()/calico-cats-profile-554694-hero-c7ba9806ce1f4fb1b4d4edc2fd820a0d.jpg',
+                name: 'Calico Cat',
+                description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+                lastUpdated: 'Last updated 3 mins ago',
+                price: '2000'
+            },
+        ];
+        saveToLocalStorage();
+
+        function saveToLocalStorage() {
+            localStorage.setItem('animals', JSON.stringify(animals));
+        }
+
+        document.getElementById('create-animal-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const imageUrl = document.getElementById('image-url').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const dailyExpense = document.getElementById('daily-expense').value;
+
+
+            if (!imageUrl || !title || !description || !dailyExpense) {
+
+                document.getElementById('error-message').style.display = 'block';
+            } else {
+                const newAnimal = {
+                    imgSrc: imageUrl,
+                    name: title,
+                    description: description,
+                    price: dailyExpense,
+                    lastUpdated: (new Date()).toLocaleString(),
+                };
+
+
+                // animals.push(newAnimal);
+
+
+                fetch('http://localhost:3030/api/animals/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newAnimal)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+                saveToLocalStorage(); // Save to localStorage
+
+
+                document.getElementById('create-animal-form').reset();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

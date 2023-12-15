@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Zoo</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="#">My Zoo</a>
+        <a href="#">My Animals</a>
+        <a href="/create">Create Animal</a>
+        <div class="search-bar">
+            <input type="text" placeholder="Type something..." class="search-input">
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Manage animals</h2>
+        <div class="sort-options">
+            <label for="sort-expensive">Sort by the most expensive animals</label>
+            <input type="checkbox" id="sort-expensive" onclick="sortAnimals()">
+        </div>
+        <div class="expense-counter">
+            <button onclick="updateTotalPriceDisplay()">Count total daily expenses:</button>
+            <p class="total-expenses"></p>
+        </div>
+
+        <div class="animal-grid">
+        </div>
+    </div>
+
+    <script>
+
+        // let animals = JSON.parse(localStorage.getItem('animals')) || [
+        //     {
+        //         imgSrc: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Ocelot_%28Jaguatirica%29_Zoo_Itatiba.jpg/1200px-Ocelot_%28Jaguatirica%29_Zoo_Itatiba.jpg',
+        //         name: 'Ocelot',
+        //         description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+        //         lastUpdated: 'Last updated 3 mins ago',
+        //         price: '1000'
+        //     },
+        //     {
+        //         imgSrc: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Octopus2.jpg/1200px-Octopus2.jpg',
+        //         name: 'Octopus',
+        //         description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+        //         lastUpdated: 'Last updated 3 mins ago',
+        //         price: '1500'
+        //     },
+        //     {
+        //         imgSrc: 'https://www.thesprucepets.com/thmb/4H4K_nta-Zvv4yJgndStugkeqtg=/2782x0/filters:no_upscale():strip_icc()/calico-cats-profile-554694-hero-c7ba9806ce1f4fb1b4d4edc2fd820a0d.jpg',
+        //         name: 'Calico Cat',
+        //         description: 'It lives in South and Central America, as far up as Mexico. It has been reported as far north as Texas.',
+        //         lastUpdated: 'Last updated 3 mins ago',
+        //         price: '2000'
+        //     },
+        // ];
+        let animals = fetch('http://localhost:3030/api/animals')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                animals = data;
+                populateAnimals();
+            })
+            .catch(err => console.log(err));
+        // saveToLocalStorage();
+
+
+
+
+        function saveToLocalStorage() {
+            localStorage.setItem('animals', JSON.stringify(animals));
+        }
+
+
+        function filterAnimals(searchTerm) {
+            return animals.filter(animal => {
+                return animal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    animal.description.toLowerCase().includes(searchTerm.toLowerCase());
+            });
+        }
+
+        function populateAnimals(filteredAnimals = animals) {
+            const animalGrid = document.querySelector('.animal-grid');
+
+            // Clear existing animal cards
+            animalGrid.innerHTML = '';
+
+            filteredAnimals.forEach(animal => {
+                const animalCard = document.createElement('div');
+                animalCard.classList.add('animal-card');
+
+                const animalImg = document.createElement('img');
+                animalImg.src = animal.imgSrc;
+                animalImg.alt = animal.name;
+
+                const animalName = document.createElement('h3');
+                animalName.textContent = animal.name;
+
+                const animalDescription = document.createElement('p');
+                animalDescription.textContent = animal.description;
+
+                const animalLastUpdated = document.createElement('p');
+                animalLastUpdated.textContent = animal.lastUpdated;
+
+                const animalPrice = document.createElement('p');
+                animalPrice.textContent = `Price: $${animal.price}`;
+
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.onclick = editAnimal;
+                editButton.dataset.animalName = animal.name;
+
+                const removeButton = document.createElement('button');
+                removeButton.textContent = 'Remove';
+                removeButton.onclick = removeAnimal;
+                removeButton.dataset.animalName = animal.name;
+
+
+
+                // Append elements to the card
+                animalCard.appendChild(animalImg);
+                animalCard.appendChild(animalName);
+                animalCard.appendChild(animalDescription);
+                animalCard.appendChild(animalLastUpdated);
+                animalCard.appendChild(animalPrice);
+                animalCard.appendChild(editButton);
+                animalCard.appendChild(removeButton);
+
+                // Append the card to the grid
+                animalGrid.appendChild(animalCard);
+            });
+            updateTotalPriceDisplay(filteredAnimals);
+        }
+        populateAnimals();
+
+
+        let animalsCopy = animals.slice();
+        function searchFunction() {
+            const searchTerm = searchInput.value;
+            const filteredAnimals = filterAnimals(searchTerm);
+            populateAnimals(filteredAnimals);
+        }
+        const searchInput = document.querySelector('.search-input');
+
+        searchInput.addEventListener('input', function () {
+            console.log('---')
+            const searchTerm = searchInput.value;
+            const filteredAnimals = filterAnimals(searchTerm);
+            animalsCopy = filteredAnimals.slice();
+            console.log(animalsCopy)
+            sortAnimals();
+            // populateAnimals(filteredAnimals);
+        });
+
+
+
+
+
+        function sortAnimals() {
+
+            const sortCheckbox = document.getElementById('sort-expensive');
+            let animalsCopy_ = animalsCopy.slice();
+            if (sortCheckbox.checked) {
+
+                // animalsCopy = animals.slice();
+
+                animalsCopy_.sort((a, b) => b.price - a.price);
+            } else {
+                console.log('Unchecking the checkbox', animalsCopy, animals)
+                // animals = animalsCopy.slice();
+                animalsCopy_ = animalsCopy.slice();
+            }
+
+
+            const animalGrid = document.querySelector('.animal-grid');
+            animalGrid.innerHTML = '';
+            populateAnimals(animalsCopy_);
+        }
+
+
+        function calculateTotalPrice(filterAnimals) {
+            const totalPrice = filterAnimals.reduce((sum, animal) => sum + parseFloat(animal.price), 0);
+            return totalPrice;
+        }
+        function updateTotalPriceDisplay(filteredAnimals = animals) {
+            const totalElement = document.querySelector('.total-expenses');
+            const totalPrice = calculateTotalPrice(filteredAnimals);
+            totalElement.textContent = `Total expenses: $${totalPrice.toFixed(2)}`;
+        }
+
+
+
+        function editAnimal() {
+            const animalName = this.dataset.animalName;
+            const index = animals.findIndex(animal => animal.name === animalName);
+            localStorage.setItem('editIndex', index);
+            window.location.href = '/edit?id=' + index;
+        }
+
+
+        function removeAnimal() {
+            const animalName = this.dataset.animalName;
+            const animalIndex = animals.findIndex(animal => animal.name === animalName);
+
+            fetch("http://localhost:3030/api/animals/detele", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ index: animalIndex })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                    animals = data.animals;
+                    populateAnimals();
+                })
+                .catch(err => console.log(err));
+
+
+
+        }
+    </script>
+</body>
+
+</html>
